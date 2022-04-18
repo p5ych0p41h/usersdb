@@ -46,18 +46,26 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 switch (view.getId()){
                     case R.id.buttonLogIn:
-                        String login = editTextLogin.getText().toString();
-                        String password = editTextPassword.getText().toString();
-                        String query = "SELECT * FROM " + TABLE_NAME + " WHERE " +
-                                COLUMN_LOGIN + " = '" + login + "' AND " +
-                                COLUMN_PASSWORD + " = '" + password +"';";
-                        Cursor cursor = sqLiteDatabase.query(TABLE_NAME, null, COLUMN_LOGIN + " = ?", new String[]{login}, null, null, null);
+                        String introducedLogin = editTextLogin.getText().toString();
+                        String introducedPassword = editTextPassword.getText().toString();
+                        String baseLogin = "";
+                        String basePassword = "";
+                        Cursor cursor = sqLiteDatabase.query(TABLE_NAME, null, COLUMN_LOGIN + " = '" + introducedLogin + "'", null, null, null, null);
                         cursor.moveToFirst();
-                        String outPassword = cursor.getString(NUM_COLUMN_PASSWORD);
-                        if(outPassword.equals(password))
-                            Toast.makeText(MainActivity.this,"DONE", Toast.LENGTH_SHORT).show();
+                        if( cursor != null && cursor.moveToFirst() ){
+                            baseLogin = cursor.getString(NUM_COLUMN_LOGIN);
+                            basePassword = cursor.getString(NUM_COLUMN_PASSWORD);
+                            cursor.close();
+                        }
+                        if(baseLogin.equals(introducedLogin) && basePassword.equals(introducedPassword)) {
+                            Toast.makeText(MainActivity.this, "DONE", Toast.LENGTH_SHORT).show();
+                        }
                         break;
                 }
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(COLUMN_LOGIN, "admin");
+                contentValues.put(COLUMN_PASSWORD, "admin");
+                sqLiteDatabase.insert(TABLE_NAME, null, contentValues);
             }
         };
         buttonLogIn.setOnClickListener(listener);
@@ -75,11 +83,6 @@ public class MainActivity extends AppCompatActivity {
                     COLUMN_LOGIN + " VARCHAR(50) PRIMARY KEY, " +
                     COLUMN_PASSWORD + " VARCHAR(50));";
             db.execSQL(query);
-
-            ContentValues cv = new ContentValues();
-            cv.put(COLUMN_LOGIN, "admin");
-            cv.put(COLUMN_PASSWORD, "admin");
-            db.insert(TABLE_NAME, null, cv);
         }
 
         @Override
